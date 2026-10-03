@@ -89,6 +89,8 @@ bool DisplayComponent::componentInitialize()
 
     connect(app, SIGNAL(screenAdded(QScreen*)), this, SLOT(monitorChange()));
     connect(app, SIGNAL(screenRemoved(QScreen*)), this,  SLOT(monitorChange()));
+    // Restore the original display mode if the app quits mid-playback.
+    connect(app, SIGNAL(aboutToQuit()), this, SLOT(restoreVideoModeOnQuit()));
 
     for(QScreen *screen : app->screens())
     {
@@ -106,6 +108,13 @@ bool DisplayComponent::componentInitialize()
   }
 
   return false;
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+void DisplayComponent::restoreVideoModeOnQuit()
+{
+  // Wayland backends can't restore from a destructor: the connection is already gone by then.
+  restorePreviousVideoMode();
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
